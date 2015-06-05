@@ -16,7 +16,7 @@ int file_statistics()
   char my_character;
   string cad;
   ifstream file;
-  string a= "wc -c "+archivo+" > stats.txt";
+  string a= "wc -c "+archivo+" > stats.txt"; //Cuenta las lineas del archivo 
 
   system(a.c_str());
   file.open("stats.txt");
