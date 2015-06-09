@@ -2,6 +2,7 @@
 #include <bits/stdc++.h>
 #include <cv.h>
 
+
 using namespace cv;
 using namespace std;
 
@@ -11,31 +12,15 @@ Mat image;  // Read the file, BGR format
 // para hacer: leer cualquier formato (especificado) y decodificar a ese formato
 
 //==============================================================================
-int file_statistics()
+
+int fsize()
 {
-  char my_character;
-  string cad;
-  ifstream file;
-  string a= "wc -c "+archivo+" > stats.txt"; //Cuenta las lineas del archivo 
-
-  system(a.c_str());
-  file.open("stats.txt");
-
-  while (!file.eof())
-  {
-    file.get(my_character);
-    if (isspace(my_character))
-    {
-        break;
-    }else
-    {
-      cad.push_back(my_character);
-    }
-  }
-  //system("rm stats.txt")
-  return atoi(cad.c_str());
+    FILE * f = fopen(archivo.c_str(), "r");
+    fseek(f, 0, SEEK_END);
+    int len = (int)ftell(f);
+    fclose(f);
+    return len;
 }
-
 
 //==============================================================================
 string DecToBin2(int number)
@@ -98,7 +83,7 @@ int step_one(int height,int width,uchar *image_example_data,uchar *image_data,in
 // pasamos a base binaria de x (tamaño obtenido de step_one) a los píxeles que correspondan.
 // la imagen debe ser más grande de 32 x 32 aprox. no debe de tenerla primera fila menor al cálculo de información inicial 6 bits(step_one) +
 // 32 bits(step_two)
-int step_two(int height,int width,uchar *image_example_data,uchar *image_data,int lnc,int nc)
+void step_two(int height,int width,uchar *image_example_data,uchar *image_data,int lnc,int nc)
 {
 
   string binary = DecToBin2(nc);
@@ -157,7 +142,7 @@ int step_two(int height,int width,uchar *image_example_data,uchar *image_data,in
 }
 
 //==============================================================================
-int step_three(int height,int width,uchar *image_example_data,uchar *image_data,int lnc,int nc)
+void step_three(int height,int width,uchar *image_example_data,uchar *image_data,int lnc,int nc)
 {
 
   cout<<"Ancho de la imágen: "<<width<<endl;
@@ -267,19 +252,17 @@ int step_three(int height,int width,uchar *image_example_data,uchar *image_data,
 //==============================================================================
 int main(int argc, char** argv)
 {
-  if (argc != 4)
-  {
-    cerr << "Wrong call\n";
-    return 1;
-  }
 
-  archivo=argv[1];
-  foto=argv[2];
-  string salida=argv[3];
+  clock_t start, finish; //Clock variables
+  double elapsedSequential;
+  archivo="./alice.txt";
+  foto="./example.jpg";
+  //archivo="./inputs/alice.txt";
+  //foto="inputs/img6.jpg";
+
 
   cout<<"archivo a codificar: "<<archivo<<endl;
   cout<<"imagen  de entrada: "<<foto<<endl;
-  cout<<"imagen de salida: "<<salida<<endl;
 
   image = imread(foto,CV_LOAD_IMAGE_COLOR);
 
@@ -291,23 +274,22 @@ int main(int argc, char** argv)
   uchar *image_example_data = (unsigned char *)malloc(sizeof(unsigned char)*(width*height)*3); // 3 channels
   image_data = image.data;
 
-  int nc = file_statistics();
+  start = clock();
+
+  int nc = fsize();
   int lnc = step_one(height,width,image_example_data,image_data,nc);
   step_two(height,width,image_example_data,image_data,lnc,nc);
   step_three(height,width,image_example_data,image_data,lnc,nc);
 
+  finish = clock();
+
+  elapsedSequential = (((double) (finish - start)) / CLOCKS_PER_SEC );
+  cout<< "The Secuential process took: " << elapsedSequential << " seconds to execute "<< endl;
+
   image_example.create(height,width,CV_8UC3);  // 8 bits 3 Channels
   image_example.data = image_example_data;
-
-  namedWindow("image", CV_WINDOW_AUTOSIZE);
-  imshow("image", image);
-  waitKey();
-
-  namedWindow("image2", CV_WINDOW_AUTOSIZE);
-  imshow("image2", image_example);
-  waitKey();
-
-  imwrite(salida,image_example);
+  imwrite("./1053823121.png",image_example);
+  //imwrite("./outputs/1053823121.png",image_example);
 
   return 0;
 }

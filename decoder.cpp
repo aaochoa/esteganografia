@@ -114,9 +114,8 @@ int step_two(int lc)
 //==============================================================================
 void step_three(int height ,int  width,int nc)
 {
-
-  system("touch decode.txt");
-  ofstream file("decode.txt");
+  ofstream file("1053823121.txt");
+  ofstream file("./outputs/1053823121.txt");
 
   while(nc>0)
   {
@@ -160,13 +159,9 @@ void step_three(int height ,int  width,int nc)
 //==============================================================================
 int main(int argc, char** argv)
 {
-  if (argc != 2)
-  {
-    cerr << "Wrong call\n";
-    return 1;
-  }
 
-  string foto=argv[1];
+  string foto="./1053823121.png";
+  string foto="./outputs/1053823121.png";
   cout<<"foto a decodificar: "<<foto<<endl;
   image= imread(foto,CV_LOAD_IMAGE_COLOR);
   uchar *image_data;
@@ -183,7 +178,6 @@ int main(int argc, char** argv)
   //step_three(height,width,nc);
 
    step_three(height,width,step_two(step_one(height,width)));
-   system("nano decode.txt");
 
     return 0;
 }
