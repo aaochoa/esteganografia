@@ -115,7 +115,7 @@ int step_two(int lc)
 void step_three(int height ,int  width,int nc)
 {
   ofstream file("1053823121.txt");
-  ofstream file("./outputs/1053823121.txt");
+  //ofstream file("./outputs/1053823121.txt");
 
   while(nc>0)
   {
@@ -160,8 +160,10 @@ void step_three(int height ,int  width,int nc)
 int main(int argc, char** argv)
 {
 
+  clock_t start, finish; //Clock variables
+  double elapsedSequential;
   string foto="./1053823121.png";
-  string foto="./outputs/1053823121.png";
+  //string foto="./outputs/1053823121.png";
   cout<<"foto a decodificar: "<<foto<<endl;
   image= imread(foto,CV_LOAD_IMAGE_COLOR);
   uchar *image_data;
@@ -173,11 +175,14 @@ int main(int argc, char** argv)
 
   cout<<"tamaño de la imágen : "<<width <<" x "<<height<<endl;
 
-  //int lc=step_one(height,width);
-  //int nc=step_two(lc);
-  //step_three(height,width,nc);
+  start = clock();
 
-   step_three(height,width,step_two(step_one(height,width)));
+  step_three(height,width,step_two(step_one(height,width)));
 
-    return 0;
+  finish = clock();
+
+  elapsedSequential = (((double) (finish - start)) / CLOCKS_PER_SEC );
+  cout<< "The Secuential process took: " << elapsedSequential << " seconds to execute "<< endl;
+
+  return 0;
 }

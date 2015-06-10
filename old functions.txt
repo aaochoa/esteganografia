@@ -1,92 +1,8 @@
-#include <highgui.h>
-#include <bits/stdc++.h>
-#include <cv.h>
-#include <omp.h>
-
-using namespace cv;
-using namespace std;
-
-string archivo,foto;
-Mat image;  // Read the file, BGR format
-// para hacer: leer cualquier formato (especificado) y decodificar a ese formato
-
-//==============================================================================
-
-int fsize()
-{
-    FILE * f = fopen(archivo.c_str(), "r");
-    fseek(f, 0, SEEK_END);
-    int len = (int)ftell(f);
-    fclose(f);
-    return len;
-}
-
-//==============================================================================
-string DecToBin2(int number)
-{
-    string result = "";
-
-    do
-    {
-        if ( (number & 1) == 0 )
-            result += "0";
-        else
-            result += "1";
-
-        number >>= 1;
-    } while ( number );
-
-    reverse(result.begin(), result.end());
-    return result;
-}
-
-
-//==============================================================================
-// insertamos a la imagen el tamaño en bits de la cantidad de caracteres a leer. ejemplo : 3 caracteres -> necesita 000011 (2)
-// reservamos: 6 bits como tamaño máximo de representación.
-int step_one(int height,int width,uchar *image_example_data,uchar *image_data,int nc)
-{
-  int j=0;
-  string binary_nc = DecToBin2(nc);
-  string binary_ar = bitset<6>(binary_nc.length()).to_string();
-
-#pragma omp parallel
-{
-  #pragma omp for
-  for(j;j<2;j++)
-  {
-
-    // obtenemos información.
-    short int B=(int)image_data[(j)*3+0];
-    short int G=(int)image_data[(j)*3+1];
-    short int R=(int)image_data[(j)*3+2];
-    //cout<<"Pixel: "<<j<<"x"<<i<<" B: "<<B<<" G: "<<G<<" R: "<<R<<endl;
-    // Pasamos a binario
-    string binary_blue = bitset<8>(B).to_string();
-    string binary_green = bitset<8>(G).to_string();
-    string binary_red = bitset<8>(R).to_string();
-    // Modificamos binario
-    binary_blue[7]=binary_ar[j*3];
-    binary_green[7]=binary_ar[j*3+1];
-    binary_red[7]=binary_ar[j*3+2];
-    // creamos nueva imágen.
-    image_example_data[(j)*3]=(int)bitset<8>(binary_blue).to_ulong();
-    image_example_data[(j)*3+1]=(int)bitset<8>(binary_green).to_ulong();
-    image_example_data[(j)*3+2]=(int)bitset<8>(binary_red).to_ulong();
-    //cout<<"Pixel: "<<j<<"x"<<i<<" Binary_b: "<<bitset<8>(binary_blue).to_ulong()<<" binary_G: "<<bitset<8>(binary_green).to_ulong()<<" binary_R: "<<bitset<8>(binary_red).to_ulong()<<endl;
-
-  }
-}
-  return binary_nc.length();
-
-}
-
-//==============================================================================
 void step_two(int height,int width,uchar *image_example_data,uchar *image_data,int lnc,int nc)
 {
 
   string binary = DecToBin2(nc);
-  int i=0,j=2;
+
   for(int k=0;k<ceil((float)lnc/3.0);k++)
   {
 
@@ -138,6 +54,10 @@ void step_two(int height,int width,uchar *image_example_data,uchar *image_data,i
      j++;
      //cout<<"Pixel: "<<j<<"x"<<i<<" Binary_b: "<<bitset<8>(binary_blue).to_ulong()<<" binary_G: "<<bitset<8>(binary_green).to_ulong()<<" binary_R: "<<bitset<8>(binary_red).to_ulong()<<endl;
   }
+}
+
+void step_three(int height,int width,uchar *image_example_data,uchar *image_data,int lnc,int nc)
+{
 
   cout<<"Ancho de la imágen: "<<width<<endl;
   cout<<"Alto de la imágen: "<<height<<endl;
@@ -244,48 +164,4 @@ void step_two(int height,int width,uchar *image_example_data,uchar *image_data,i
  }
 
 
-}
-
-//==============================================================================
-int main(int argc, char** argv)
-{
-
-  clock_t start, finish; //Clock variables
-  double elapsedSequential;
-  archivo="./alice.txt";
-  foto="./example.jpg";
-  //archivo="./inputs/alice.txt";
-  //foto="inputs/img6.jpg";
-
-
-  cout<<"archivo a codificar: "<<archivo<<endl;
-  cout<<"imagen  de entrada: "<<foto<<endl;
-
-  image = imread(foto,CV_LOAD_IMAGE_COLOR);
-
-  Mat image_example;
-  uchar *image_data;
-  Size s = image.size();
-  int width = s.width;
-  int height= s.height;
-  uchar *image_example_data = (unsigned char *)malloc(sizeof(unsigned char)*(width*height)*3); // 3 channels
-  image_data = image.data;
-
-  start = clock();
-
-  int nc = fsize();
-  int lnc = step_one(height,width,image_example_data,image_data,nc);
-  step_two(height,width,image_example_data,image_data,lnc,nc);
-
-  finish = clock();
-
-  elapsedSequential = (((double) (finish - start)) / CLOCKS_PER_SEC );
-  cout<< "The Secuential process took: " << elapsedSequential << " seconds to execute "<< endl;
-
-  image_example.create(height,width,CV_8UC3);  // 8 bits 3 Channels
-  image_example.data = image_example_data;
-  imwrite("./1053823121.png",image_example);
-  //imwrite("./outputs/1053823121.png",image_example);
-
-  return 0;
 }
